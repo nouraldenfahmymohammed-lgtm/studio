@@ -1,10 +1,18 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Clock } from 'lucide-react';
+import { FileText, Clock, LogIn } from 'lucide-react';
 import { examDetails } from '@/lib/exam-data';
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-2xl shadow-lg">
@@ -20,9 +28,25 @@ export default function Home() {
             <Clock size={20} />
             <span>{`المدة: ${examDetails.durationInMinutes} دقيقة`}</span>
           </div>
-          <Button asChild size="lg" className="w-full max-w-xs font-bold text-lg">
-            <Link href="/exam">ابدأ الامتحان</Link>
-          </Button>
+
+          {user ? (
+            <Button asChild size="lg" className="w-full max-w-xs font-bold text-lg">
+              <Link href="/exam">ابدأ الامتحان</Link>
+            </Button>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs">
+              <Button asChild size="lg" className="w-full font-bold text-lg">
+                <Link href="/login">
+                  <LogIn className="ml-2" />
+                  تسجيل الدخول
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg" className="w-full font-bold text-lg">
+                <Link href="/signup">إنشاء حساب</Link>
+              </Button>
+            </div>
+          )}
+
         </CardContent>
       </Card>
     </main>
